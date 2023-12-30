@@ -17,10 +17,7 @@ C_SOURCEs =
 SOURCEs = $(ASM_SOURCEs) $(C_SOURCEs) $(COMMON_SOURCE)
 HEADERs = $(ASM_HEADERs) $(C_HEADERs)
 
-all: test dwt_test fnt_test gt_test symbolic_test _2k_symbolic_test
-
-test: test.c $(SOURCEs) $(HEADERs)
-	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
+all: dwt_test fnt_test gt_test symbolic_test _2k_symbolic_test
 
 dwt_test: dwt_test.c $(SOURCEs) $(HEADERs)
 	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
@@ -41,7 +38,6 @@ _2k_symbolic_test: _2k_symbolic_test.c $(SOURCEs) $(HEADERs)
 
 .PHONY: clean
 clean:
-	rm -f test
 	rm -f dwt_test
 	rm -f fnt_test
 	rm -f gt_test
