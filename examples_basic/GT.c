@@ -12,9 +12,25 @@
 #include "gen_table.h"
 #include "ntt_c.h"
 
+// ================
+// This file demonstrates the isomorphism Z_Q[x] / (x^1536 - 1) \cong
+// Z_Q[z] / (z^3 - 1) \otimes Z_Q[y] / (y^512 - 1).
+
+// ================
+// Optimization guide.
+
+/*
+
+TBA
+
+*/
+
 #define ARRAY_N 1536
 
 #define Q (7681)
+
+// ================
+// Z_Q
 
 int16_t mod = Q;
 
@@ -46,6 +62,9 @@ struct commutative_ring coeff_ring = {
     .mulZ = mulZ,
     .expZ = expZ
 };
+
+// ================
+// Z_Q[z] / (z^3 - 1)
 
 void memberZ_convol(void *des, void *src){
 
@@ -99,8 +118,6 @@ struct commutative_ring convol_ring = {
     .expZ = expZ_convol
 };
 
-struct compress_profile profile;
-
 #define BUFF_MAX 4096
 
 int16_t bufflo[BUFF_MAX];
@@ -116,7 +133,7 @@ int main(void){
 
     int16_t twiddle_convol[3];
 
-    int16_t omega, zeta, twiddle, scale, t;
+    int16_t twiddle, t;
 
     for(size_t i = 0; i < ARRAY_N; i++){
         t = rand();
@@ -125,29 +142,41 @@ int main(void){
         cmod_int16(poly2 + i, &t, &mod);
     }
 
+// ================
+
+    // Compute the product in Z_Q[x] / (x^1536 - 1).
     twiddle = 1;
     naive_mulR(ref,
         poly1, poly2, ARRAY_N, &twiddle, coeff_ring);
 
+// ================
+
+    // Permute so we have Z_Q[x] / (x^1536 - 1) \cong
+    // Z_Q[y] / (y^512 - 1) \otimes Z_Q[z] / (z^3 - 1).
     for(size_t i = 0; i < ARRAY_N; i++){
         poly1_NTT[(i % 512) * 3 + (i % 3)] = poly1[i];
         poly2_NTT[(i % 512) * 3 + (i % 3)] = poly2[i];
     }
 
+// ================
+
+    // Compute the product in Z_Q[y] / (y^512 - 1) \otimes Z_Q[z] / (z^3 - 1).
     twiddle_convol[0] = 1;
     twiddle_convol[1] = 0;
     twiddle_convol[2] = 0;
     naive_mulR(res_NTT,
         poly1_NTT, poly2_NTT, 512, &twiddle_convol, convol_ring);
 
+// ================
+
+    // Permute so we have
+    // Z_Q[y] / (y^512 - 1) \otimes Z_Q[z] / (z^3 - 1)
+    // \cong Z_Q[x] / (x^1536 - 1).
     for(size_t i = 0; i < ARRAY_N; i++){
         res[i] = res_NTT[(i % 512) * 3 + (i % 3)];
     }
 
     for(size_t i = 0; i < ARRAY_N; i++){
-        // if(ref[i] != res[i]){
-        //     printf("%4zu: %12d, %12d\n", i, ref[i], res[i]);
-        // }
         assert(ref[i] == res[i]);
     }
 

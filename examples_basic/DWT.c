@@ -12,6 +12,18 @@
 #include "gen_table.h"
 #include "ntt_c.h"
 
+// ================
+// This file demonstrates the application of Cooley--Tukey FFT to
+// Z_Q[x] / (x^512 + 1), and Gentleman--Sande FFT to the inversion.
+
+// ================
+// Optimization guide.
+/*
+
+1. Instead of computing one layer at a time, try to compute multiple ones and save memory operations.
+
+*/
+
 #define ARRAY_N 512
 #define NTT_N 512
 #define LOGNTT_N 9
@@ -20,6 +32,9 @@
 
 #define OMEGA (49)
 #define OMEGA_INV (1254)
+
+// ================
+// Z_Q
 
 int16_t mod = Q;
 
@@ -52,6 +67,8 @@ struct commutative_ring coeff_ring = {
     .expZ = expZ
 };
 
+// ================
+
 struct compress_profile profile;
 
 #define BUFF_MAX 4096
@@ -74,9 +91,15 @@ int main(void){
         cmod_int16(poly2 + i, &t, &mod);
     }
 
+// ================
+// Compute the product in Z_Q[x] / (x^512 + 1).
+
     twiddle = -1;
     naive_mulR(ref,
         poly1, poly2, ARRAY_N, &twiddle, coeff_ring);
+
+// ================
+// Specify the layer-merging strategy.
 
     profile.array_n = ARRAY_N;
     profile.ntt_n = NTT_N;
@@ -88,18 +111,29 @@ int main(void){
     profile.merged_layers[2] = 2;
     profile.merged_layers[3] = 2;
 
+// ================
+// Generate twiddle factors for Cooley--Tukey FFT.
+
     zeta = OMEGA;
     coeff_ring.expZ(&omega, &zeta, 2);
     scale = 1;
     gen_streamlined_DWT_table(buffhi,
         &scale, &omega, &zeta, profile, 0, coeff_ring);
 
+// ================
+// Apply Cooley--Tukey FFT.
+
     compressed_CT_NTT(poly1,
         0, 3, buffhi, profile, coeff_ring);
     compressed_CT_NTT(poly2,
         0, 3, buffhi, profile, coeff_ring);
 
+// ================
+
     point_mul(res, poly1, poly2, ARRAY_N, 1, coeff_ring);
+
+// ================
+// Generate twiddle factors for the inverse via Gentlemans--Sande FFT.
 
     zeta = OMEGA_INV;
     coeff_ring.expZ(&omega, &zeta, 2);
@@ -107,8 +141,14 @@ int main(void){
     gen_streamlined_DWT_table(buffhi,
         &scale, &omega, &zeta, profile, 0, coeff_ring);
 
+// ================
+// Apply Gentleman--Sande FFT.
+
     compressed_GS_NTT(res,
         0, 3, buffhi, profile, coeff_ring);
+
+// ================
+// Multiply the scale to reference.
 
     scale = 512;
     for(size_t i = 0; i < ARRAY_N; i++){
@@ -116,9 +156,6 @@ int main(void){
     }
 
     for(size_t i = 0; i < ARRAY_N; i++){
-        // if(ref[i] != res[i]){
-        //     printf("%4zu: %12d, %12d\n", i, ref[i], res[i]);
-        // }
         assert(ref[i] == res[i]);
     }
 

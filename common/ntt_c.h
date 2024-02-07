@@ -1,14 +1,10 @@
-
 #ifndef NTT_C_H
 #define NTT_C_H
 
 #include "tools.h"
 
-// addZ, subZ, mulZ
-
 // ================================
-// Cooley-Tukey butterfly
-
+// Cooley-Tukey butterfly.
 void CT_butterfly(
     void *src,
     size_t indx_a, size_t indx_b,
@@ -17,8 +13,16 @@ void CT_butterfly(
     );
 
 // ================================
-// multi-layer Cooley-Tukey butterfly for the forward transformation
+// Gentleman-Sande butterfly.
+void GS_butterfly(
+    void *src,
+    size_t indx_a, size_t indx_b,
+    void *twiddle,
+    struct commutative_ring ring
+    );
 
+// ================================
+// Multi-layer Cooley-Tukey butterfly for the forward transformation.
 void m_layer_CT_butterfly(
     void *src,
     size_t layers, size_t step,
@@ -27,8 +31,7 @@ void m_layer_CT_butterfly(
     );
 
 // ================================
-// multi-layer Cooley-Tukey butterfly for the inverse transformation
-
+// Multi-layer Cooley-Tukey butterfly for the inverse transformation.
 void m_layer_CT_ibutterfly(
     void *src,
     size_t layers, size_t step,
@@ -36,6 +39,8 @@ void m_layer_CT_ibutterfly(
     struct commutative_ring ring
     );
 
+// ================================
+// Multi-layer Gentleman-Sande butterfly for the inverse transformation.
 void m_layer_GS_ibutterfly(
     void *src,
     size_t layers, size_t step,
@@ -44,9 +49,8 @@ void m_layer_GS_ibutterfly(
     );
 
 // ================================
-// NTT with Cooley-Tukey butterfly
-// we must use m_layer_CT_butterfly here
-
+// NTT with Cooley-Tukey butterfly.
+// We must use m_layer_CT_butterfly here.
 void compressed_CT_NTT(
     void *src,
     size_t start_level, size_t end_level,
@@ -56,9 +60,8 @@ void compressed_CT_NTT(
     );
 
 // ================================
-// iNTT with Cooley-Tukey butterfly
-// we must use m_layer_CT_ibutterfly here
-
+// iNTT with Cooley-Tukey butterfly.
+// We must use m_layer_CT_ibutterfly here.
 void compressed_CT_iNTT(
     void *src,
     size_t start_level, size_t end_level,
@@ -67,6 +70,9 @@ void compressed_CT_iNTT(
     struct commutative_ring ring
     );
 
+// ================================
+// iNTT with Gentleman-Sande butterfly.
+// We must use m_layer_GS_ibutterfly here.
 void compressed_GS_NTT(
     void *src,
     size_t start_level, size_t end_level,

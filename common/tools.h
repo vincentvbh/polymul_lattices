@@ -1,4 +1,3 @@
-
 #ifndef TOOLS_H
 #define TOOLS_H
 
@@ -6,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+
+// ================================
+// Introduce this file...
 
 struct compress_profile{
     size_t array_n;
@@ -25,39 +27,41 @@ struct commutative_ring{
 };
 
 // ================================
-// reducing elements to *mod
+// We also provide several commonly used functions.
+
+// ================================
+// Reducing elements to mod mod_v.
 
 void cmod_int16(void *des, void *src, void *mod);
 void cmod_int32(void *des, void *src, void *mod);
 void cmod_int64(void *des, void *src, void *mod);
 
 // ================================
-// addition in *mod
+// Addition in mod mov_v.
 
 void addmod_int16(void *des, void *src1, void *src2, void *mod);
 void addmod_int32(void *des, void *src1, void *src2, void *mod);
 
 // ================================
-// subtraction in *mod
+// Subtraction in mod mov_v.
 
 void submod_int16(void *des, void *src1, void *src2, void *mod);
 void submod_int32(void *des, void *src1, void *src2, void *mod);
 
 // ================================
-// multiplication in *mod
+// Multiplication in mod mov_v.
 
 void mulmod_int16(void *des, void *src1, void *src2, void *mod);
 void mulmod_int32(void *des, void *src1, void *src2, void *mod);
 
 // ================================
-// exponentiation in *mod
+// Exponentiation in mod mov_v.
 
 void expmod_int16(void *des, void *src, size_t e, void *mod);
 void expmod_int32(void *des, void *src, size_t e, void *mod);
 
 // ================================
-// in-place bit-reversing the array
-
+// In-place bit-reversing the array.
 void bitreverse(void *src, size_t len, size_t size);
 
 #endif

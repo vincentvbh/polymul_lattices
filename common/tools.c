@@ -3,7 +3,7 @@
 #include "tools.h"
 
 // ================================
-// reducing elements to mod mod_v
+// Reducing elements to mod mod_v.
 
 void cmod_int16(void *des, void *src, void *mod){
     int16_t mod_v = *(int16_t*)mod;
@@ -42,7 +42,7 @@ void cmod_int64(void *des, void *src, void *mod){
 }
 
 // ================================
-// addition in mod mov_v
+// Addition in mod mov_v.
 
 void addmod_int16(void *des, void *src1, void *src2, void *mod){
 
@@ -71,7 +71,7 @@ void addmod_int32(void *des, void *src1, void *src2, void *mod){
 }
 
 // ================================
-// subtraction in mod mov_v
+// Subtraction in mod mov_v.
 
 void submod_int16(void *des, void *src1, void *src2, void *mod){
 
@@ -100,7 +100,7 @@ void submod_int32(void *des, void *src1, void *src2, void *mod){
 }
 
 // ================================
-// multiplication in mod mov_v
+// Multiplication in mod mov_v.
 
 void mulmod_int16(void *des, void *src1, void *src2, void *mod){
 
@@ -114,7 +114,6 @@ void mulmod_int16(void *des, void *src1, void *src2, void *mod){
     *(int16_t*)des = (int16_t)des_v;
 
 }
-
 
 void mulmod_int32(void *des, void *src1, void *src2, void *mod){
 
@@ -130,7 +129,7 @@ void mulmod_int32(void *des, void *src1, void *src2, void *mod){
 }
 
 // ================================
-// exponentiation in mod mov_v
+// Exponentiation in mod mov_v.
 
 void expmod_int16(void *des, void *src, size_t e, void *mod){
 
@@ -167,8 +166,7 @@ void expmod_int32(void *des, void *src, size_t e, void *mod){
 }
 
 // ================================
-// in-place bit-reversing the array
-
+// In-place bit-reversing the array.
 void bitreverse(void *src, size_t len, size_t size){
 
     char tmp[size];
