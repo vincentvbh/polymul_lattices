@@ -78,7 +78,7 @@ void karatsuba_recur(void *des, void *src1, void *src2, size_t len, size_t thres
         return;
     }
 
-    // declare buffers for the evaluation.
+    // Declare buffers for the evaluation.
     char src1mid[(len / 2) * ring.sizeZ], src2mid[(len / 2) * ring.sizeZ];
     char desmid[(len - 1) * ring.sizeZ];
 
