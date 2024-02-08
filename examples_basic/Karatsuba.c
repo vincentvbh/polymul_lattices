@@ -70,7 +70,7 @@ struct commutative_ring coeff_ring = {
 
 // threshold | len,
 // len / threshold must be a power of two.
-void karatsuba_recur(uint64_t *des, uint64_t *src1, uint64_t *src2, size_t len, size_t threshold, struct commutative_ring ring){
+void karatsuba_recur(void *des, void *src1, void *src2, size_t len, size_t threshold, struct commutative_ring ring){
 
     // If len <= threshold, we apply the naive long multiplication.
     if(len <= threshold){
@@ -79,13 +79,13 @@ void karatsuba_recur(uint64_t *des, uint64_t *src1, uint64_t *src2, size_t len, 
     }
 
     // declare buffers for the evaluation.
-    uint64_t src1mid[(len / 2 )], src2mid[(len / 2 )];
-    uint64_t desmid[(len - 1 )];
+    char src1mid[(len / 2) * ring.sizeZ], src2mid[(len / 2) * ring.sizeZ];
+    char desmid[(len - 1) * ring.sizeZ];
 
     // Evaluating half-size polynomials at 1.
     for(size_t i = 0; i < (len / 2); i++){
-        ring.addZ(src1mid + i, src1 + i, src1 + (len / 2) + i);
-        ring.addZ(src2mid + i, src2 + i, src2 + (len / 2) + i);
+        ring.addZ(src1mid + i * ring.sizeZ, src1 + i * ring.sizeZ, src1 + ((len / 2) + i) * ring.sizeZ);
+        ring.addZ(src2mid + i * ring.sizeZ, src2 + i * ring.sizeZ, src2 + ((len / 2) + i) * ring.sizeZ);
     }
 
     memset(des, 0, (2 * len - 1) * ring.sizeZ);
@@ -93,19 +93,19 @@ void karatsuba_recur(uint64_t *des, uint64_t *src1, uint64_t *src2, size_t len, 
     // Karatsuba for the point 0.
     karatsuba_recur(des, src1, src2, len / 2, threshold, ring);
     // Karatsuba for the point \infty.
-    karatsuba_recur(des + len, src1 + (len / 2), src2 + (len / 2), len / 2, threshold, ring);
+    karatsuba_recur(des + len * ring.sizeZ, src1 + (len / 2) * ring.sizeZ, src2 + (len / 2) * ring.sizeZ, len / 2, threshold, ring);
     // Karatsuba for the point 1.
     karatsuba_recur(desmid, src1mid, src2mid, len / 2, threshold, ring);
 
     // Apply Karatsuba interpolation.
     for(size_t i = 0; i < len - 1; i++){
-        ring.subZ(desmid + i, desmid + i, des + i);
-        ring.subZ(desmid + i, desmid + i, des + len + i);
+        ring.subZ(desmid + i * ring.sizeZ, desmid + i * ring.sizeZ, des + i * ring.sizeZ);
+        ring.subZ(desmid + i * ring.sizeZ, desmid + i * ring.sizeZ, des + (len + i) * ring.sizeZ);
     }
 
     // Sum up the overlapped parts.
     for(size_t i = 0; i < len - 1; i++){
-        ring.addZ(des + (len / 2) + i, des + (len / 2) + i, desmid + i);
+        ring.addZ(des + ((len / 2) + i) * ring.sizeZ, des + ((len / 2) + i) * ring.sizeZ, desmid + i * ring.sizeZ);
     }
 
 }
