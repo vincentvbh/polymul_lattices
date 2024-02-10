@@ -12,6 +12,14 @@
 #include "gen_table.h"
 #include "ntt_c.h"
 
+/*
+
+TODO:
+
+Apply Cooley--Tukey FFT to the radix-2 part.
+
+*/
+
 // ================
 // This file demonstrates the isomorphism Z_Q[x] / (x^1536 - 1) \cong
 // Z_Q[z] / (z^3 - 1) \otimes Z_Q[y] / (y^512 - 1).
@@ -118,11 +126,6 @@ struct commutative_ring convol_ring = {
     .expZ = expZ_convol
 };
 
-#define BUFF_MAX 4096
-
-int16_t bufflo[BUFF_MAX];
-int16_t buffhi[BUFF_MAX];
-
 int main(void){
 
     int16_t poly1[ARRAY_N], poly2[ARRAY_N];
@@ -137,9 +140,9 @@ int main(void){
 
     for(size_t i = 0; i < ARRAY_N; i++){
         t = rand();
-        cmod_int16(poly1 + i, &t, &mod);
+        coeff_ring.memberZ(poly1 + i, &t);
         t = rand();
-        cmod_int16(poly2 + i, &t, &mod);
+        coeff_ring.memberZ(poly2 + i, &t);
     }
 
 // ================

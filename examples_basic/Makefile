@@ -1,16 +1,13 @@
 
 CC = gcc
 
-CFLAGS += -O0 -Wall
-
-# $(warning $(CFLAGS))
+CFLAGS += -O0 -Wall -Wunused -Wpedantic -Wno-pointer-arith
 
 COMMON_PATH = ../common
 
 CFLAGS += -I$(COMMON_PATH)
 
 GMP_PATH = /opt/homebrew/opt/gmp
-
 GMP_FLAGS = -I$(GMP_PATH)/include -L$(GMP_PATH)/lib -lgmp
 
 COMMON_SOURCE = $(COMMON_PATH)/tools.c $(COMMON_PATH)/naive_mult.c $(COMMON_PATH)/gen_table.c $(COMMON_PATH)/ntt_c.c

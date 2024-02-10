@@ -160,9 +160,9 @@ int main(void){
 
     for(size_t i = 0; i < ARRAY_N; i++){
         t = rand();
-        cmod_int32(poly1 + i, &t, &mod);
+        coeff_ring.memberZ(poly1 + i, &t);
         t = rand();
-        cmod_int32(poly2 + i, &t, &mod);
+        coeff_ring.memberZ(poly2 + i, &t);
     }
 
 // ================

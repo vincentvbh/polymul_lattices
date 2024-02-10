@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <assert.h>
 
 #include "tools.h"
 #include "naive_mult.h"
@@ -68,8 +69,36 @@ struct commutative_ring coeff_ring = {
 
 // ================
 
+// len must be even.
+static
+void karatsuba_eval(void *des, void *src, size_t len, struct commutative_ring ring){
+
+    for(size_t i = 0; i < (len / 2); i++){
+        ring.addZ(des + i * ring.sizeZ, src + i * ring.sizeZ, src + ((len / 2) + i) * ring.sizeZ);
+    }
+
+}
+
+// len must be even.
+static
+void karatsuba_interpol(void *des, void *src, size_t len, struct commutative_ring ring){
+
+    // Interpolation.
+    for(size_t i = 0; i < len - 1; i++){
+        ring.subZ(src + i * ring.sizeZ, src + i * ring.sizeZ, des + i * ring.sizeZ);
+        ring.subZ(src + i * ring.sizeZ, src + i * ring.sizeZ, des + (len + i) * ring.sizeZ);
+    }
+
+    // Sum up the overlapped parts.
+    for(size_t i = 0; i < len - 1; i++){
+        ring.addZ(des + ((len / 2) + i) * ring.sizeZ, des + ((len / 2) + i) * ring.sizeZ, src + i * ring.sizeZ);
+    }
+
+}
+
 // threshold | len,
 // len / threshold must be a power of two.
+static
 void karatsuba_recur(void *des, void *src1, void *src2, size_t len, size_t threshold, struct commutative_ring ring){
 
     // If len <= threshold, we apply the naive long multiplication.
@@ -83,10 +112,8 @@ void karatsuba_recur(void *des, void *src1, void *src2, size_t len, size_t thres
     char desmid[(len - 1) * ring.sizeZ];
 
     // Evaluating half-size polynomials at 1.
-    for(size_t i = 0; i < (len / 2); i++){
-        ring.addZ(src1mid + i * ring.sizeZ, src1 + i * ring.sizeZ, src1 + ((len / 2) + i) * ring.sizeZ);
-        ring.addZ(src2mid + i * ring.sizeZ, src2 + i * ring.sizeZ, src2 + ((len / 2) + i) * ring.sizeZ);
-    }
+    karatsuba_eval(src1mid, src1, len, ring);
+    karatsuba_eval(src2mid, src2, len, ring);
 
     memset(des, 0, (2 * len - 1) * ring.sizeZ);
 
@@ -97,16 +124,8 @@ void karatsuba_recur(void *des, void *src1, void *src2, size_t len, size_t thres
     // Karatsuba for the point 1.
     karatsuba_recur(desmid, src1mid, src2mid, len / 2, threshold, ring);
 
-    // Apply Karatsuba interpolation.
-    for(size_t i = 0; i < len - 1; i++){
-        ring.subZ(desmid + i * ring.sizeZ, desmid + i * ring.sizeZ, des + i * ring.sizeZ);
-        ring.subZ(desmid + i * ring.sizeZ, desmid + i * ring.sizeZ, des + (len + i) * ring.sizeZ);
-    }
-
-    // Sum up the overlapped parts.
-    for(size_t i = 0; i < len - 1; i++){
-        ring.addZ(des + ((len / 2) + i) * ring.sizeZ, des + ((len / 2) + i) * ring.sizeZ, desmid + i * ring.sizeZ);
-    }
+    // Apply Karatsuba interpolation and sum up the overlapped parts.
+    karatsuba_interpol(des, desmid, len, ring);
 
 }
 
@@ -128,9 +147,7 @@ int main(void){
     karatsuba_recur(res, src1, src2, ARRAY_N, 6, coeff_ring);
 
     for(size_t i = 0; i < 2 * ARRAY_N - 1; i++){
-        if(ref[i] != res[i]){
-            printf("%4zu: %24llu, %24llu\n", i, ref[i], res[i]);
-        }
+        assert(ref[i] == res[i]);
     }
 
     printf("Karatsuba finished!\n");

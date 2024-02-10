@@ -1,4 +1,3 @@
-
 # What is this repository about
 A repository with examples for each tricks used in software polynomial multiplication works.
 
@@ -9,28 +8,36 @@ A repository with examples for each tricks used in software polynomial multiplic
 - `examples_basic`: Examples of each of the ideas.
     - `BigIntMul.c`: This file demonstrates how to multiply integers via polynomial multiplications.
         - Assumed knowledge: Integer and polynomial multiplications.
-        - Reference: Folklore.
-    - `DWT.c`: This file demonstrates discrete weighted transform (DWT).
+        - References: Folklore.
+        - Additional references:
+    - `DWT.c`: This file demonstrates Cooley--Tukey FFT for discrete weighted transform.
         - Assumed knowledge: Chinese remainder theorem for polynomial rings.
-        - Reference: [CF94]
+        - References: [CT65], [CF94].
+        - Additional references:
     - `FNT.c`: This file demonstrates Fermat number transform.
         - Assumed knowledge: Chinese remainder theorem for polynomial rings.
-        - Reference: [AB74]
+        - References: [AB74].
+        - Additional references: [SS71], [CT65].
     - `GT.c`: This file demonstrates Good--Thomas FFT.
         - Assumed knowledge: Multi-variate polynomial rings (minimum); tensor product of associate algebras (recommended).
-        - Reference: [Goo58]
+        - References: [Goo58].
+        - Additional references:
     - `Karatsuba.c`: This file demonstrates Karatsuba.
         - Assumed knowledge: Chinese remainder theorem for polynomial rings and evaluation at infinity; module homomorphism (recommended).
-        - Reference: [KO62]
+        - References: [KO62].
+        - Additional references:
     - `Nussbaumer.c`: This file demonstrates Nussbaumer FFT.
         - Assumed knowledge: Chinese remainder theorem for multi-variate polynomial rings.
-        - Reference: [Nus80]
+        - References: [Nus80].
+        - Additional references: [SS71], [Sch77], [CK91].
     - `Schoenhage.c`: This file demonstrates Schoenhage FFT.
         - Assumed knowledge: Chinese remainder theorem for multi-variate polynomial rings.
-        - Reference: [Sch77]
+        - References: [Sch77].
+        - Additional references: [SS71].
     - `TMVP.c`: This file demonstrates Toeplitz matrix-vector product built upon Toom-4.
         - Assumed knowledge: Module-theoretic dual of algebra homomorphisms over commutative rings.
-        - Reference: [Fid73], [Win80]
+        - References: [Too63], [Fid73], [Win80].
+        - Additional references:
 
 ## Software requirements
 That's simple. You just need to compile `C` programs.
@@ -54,12 +61,18 @@ Llewellyn Hilleth Thomas. Using a computer to solve problems in physics. Applica
 [Too63]
 Andrei L. Toom. The Complexity of a Scheme of Functional Elements Realizing the Multiplication of Integers. Soviet Mathematics Doklady, 3:714–716, 1963. http://toomandre.com/my-articles/engmat/MULT-E.PDF.
 
+[CT65]
+James W. Cooley and John W. Tukey. An Algorithm for the Ma- chine Calculation of Complex Fourier Series. Mathematics of Com- putation, 19(90):297–301, 1965. https://www.ams.org/journals/mcom/1965-19-090/S0025-5718-1965-0178586-1/.
+
 [GS66]
 W. M. Gentleman and G. Sande. Fast Fourier Transforms: For Fun and Profit. In Proceedings of the November 7-10, 1966, Fall Joint Computer Conference, AFIPS ’66 (Fall), pages 563–578. Association for Computing
 Machinery, 1966. https://doi.org/10.1145/1464291.1464352.
 
 [Rad68]
 Charles M. Rader. Discrete Fourier Transforms When the Number of Data Samples Is Prime. Proceedings of the IEEE, 56(6):1107–1108, 1968. https://ieeexplore.ieee.org/document/1448407.
+
+[SS71]
+Arnold Schoenhage and Volker Strassen. Schnelle Multiplikation großer Zahlen. Computing, 7(3-4):281–292, 1971. https://link.springer.com/article/10.1007/BF02242355.
 
 [Fid73]
 Charles M. Fiduccia. On the Algebraic Complexity of Matrix Multiplication.
@@ -85,10 +98,5 @@ David G. Cantor and Erich Kaltofen. On Fast Multiplication of Polynomials over A
 
 [CF94]
 Richard Crandall and Barry Fagin. Discrete Weighted Trans- forms and Large-integer Arithmetic. Mathematics of computa- tion, 62(205):305–324, 1994. https://www.ams.org/journals/mcom/1994-62-205/S0025-5718-1994-1185244-1/?active=current.
-
-
-
-
-
 
 

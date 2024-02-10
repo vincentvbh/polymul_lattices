@@ -69,12 +69,13 @@ struct commutative_ring coeff_ring = {
 
 // ================
 
+int32_t streamlined_NTT_table[NTT_N - 1];
+
+int32_t streamlined_iNTT_table[NTT_N - 1];
+
+int32_t streamlined_twiddle_table[(NTT_N - 1)];
+
 struct compress_profile profile;
-
-#define BUFF_MAX 4096
-
-int32_t bufflo[BUFF_MAX];
-int32_t buffhi[BUFF_MAX];
 
 // ================
 // Tables of squares and square roots.
@@ -91,9 +92,9 @@ int main(void){
 
     for(size_t i = 0; i < ARRAY_N; i++){
         t = rand();
-        cmod_int32(poly1 + i, &t, &mod);
+        coeff_ring.memberZ(poly1 + i, &t);
         t = rand();
-        cmod_int32(poly2 + i, &t, &mod);
+        coeff_ring.memberZ(poly2 + i, &t);
     }
 
 // ================
@@ -125,8 +126,6 @@ int main(void){
         cmod_int32(__sqrt + t, __sqrt + t, &mod);
     }
 
-    // printf("%d\n", __sqrt[2]);
-
 // ================
 // Specify the layer-merging strategy.
 
@@ -145,16 +144,16 @@ int main(void){
     zeta = 1;
     omega = OMEGA;
     scale = 1;
-    gen_streamlined_DWT_table(buffhi,
+    gen_streamlined_DWT_table(streamlined_twiddle_table,
         &scale, &omega, &zeta, profile, 0, coeff_ring);
 
 // ================
 // Apply Cooley--Tukey FFT.
 
     compressed_CT_NTT(poly1,
-        0, LOGNTT_N - 1, buffhi, profile, coeff_ring);
+        0, LOGNTT_N - 1, streamlined_twiddle_table, profile, coeff_ring);
     compressed_CT_NTT(poly2,
-        0, LOGNTT_N - 1, buffhi, profile, coeff_ring);
+        0, LOGNTT_N - 1, streamlined_twiddle_table, profile, coeff_ring);
 
 // ================
 
@@ -166,14 +165,14 @@ int main(void){
     zeta = 1;
     omega = OMEGA_INV;
     scale = 1;
-    gen_streamlined_DWT_table(buffhi,
+    gen_streamlined_DWT_table(streamlined_twiddle_table,
         &scale, &omega, &zeta, profile, 0, coeff_ring);
 
 // ================
 // Apply the inverse of Cooley--Tukey FFT.
 
     compressed_GS_NTT(res,
-        0, LOGNTT_N - 1, buffhi, profile, coeff_ring);
+        0, LOGNTT_N - 1, streamlined_twiddle_table, profile, coeff_ring);
 
 // ================
 // Multiply the scale to the reference.

@@ -77,18 +77,23 @@ void gmp_mul(uint64_t *res, const uint64_t *src1, const uint64_t *src2, size_t l
 
     mpz_t x, y, z;
 
+    // Allocate the memory.
     mpz_init(x);
     mpz_init(y);
     mpz_init(z);
 
+    // Import the inputs.
     mpz_import(x, len, -1, sizeof(uint64_t), -1, 0, src1);
     mpz_import(y, len, -1, sizeof(uint64_t), -1, 0, src2);
 
+    // Multiply with GMP.
     mpz_mul(z, x, y);
 
+    // Export the result.
     memset(res, 0, 2 * len * sizeof(uint64_t));
     mpz_export(res, NULL, -1, sizeof(uint64_t), -1, 0, z);
 
+    // Free the memory.
     mpz_clears(x, y, z, NULL);
 
 }
@@ -134,23 +139,24 @@ int main(void){
         src2[i] = (((uint64_t)rand()) << 32 ) | rand();
     }
 
+    // Compute the product with GMP.
     gmp_mul(ref, src1, src2, LIMBS);
 
-    printf("gmp_mul finished!\n");
-
+    // Apply integer-to-polynomial reduction.
     bits_chunk16(poly1, src1, LIMBS);
     bits_chunk16(poly2, src2, LIMBS);
 
-    memset(poly_prod, 0, 2 * ARRAY_N * sizeof(uint64_t));
+    // Compute the product of polynomials.
     naive_mul_long(poly_prod, poly1, poly2, ARRAY_N, coeff_ring);
 
+    // Convert the resulting polynomial back to an integer.
     bits_dechunk16(res, poly_prod, 2 * ARRAY_N - 1);
 
     for(size_t i = 0; i < 2 * LIMBS; i++){
         assert(ref[i] == res[i]);
     }
 
-    printf("naive_mul_long finished!\n");
+    printf("Test finished!\n");
 
 }
 
