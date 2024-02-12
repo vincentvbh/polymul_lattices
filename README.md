@@ -25,6 +25,18 @@ A repository with examples for each tricks used in software polynomial multiplic
     - `Karatsuba.c`: This file demonstrates Karatsuba.
         - Assumed knowledge: Chinese remainder theorem for polynomial rings and evaluation at infinity; module homomorphism (recommended).
         - References: [KO62].
+        - Additional references: [Too63]
+    - `TC.c`: This file demonstrates Toom-4.
+        - Assumed knowledge: Chinese remainder theorem for polynomial rings and evaluation at infinity; module homomorphism (recommended).
+        - References: [Too63].
+        - Additional references:
+    - `Toeplitz-TC.c`: This file demonstrates Toeplitz matrix-vector product built upon Toom-4.
+        - Assumed knowledge: Module-theoretic dual of algebra homomorphisms over commutative rings.
+        - References: [Too63], [Fid73], [Win80].
+        - Additional references:
+    - `TMVP-polymul`: TBA.
+        - Assumed knowledge:
+        - References:
         - Additional references:
     - `Nussbaumer.c`: This file demonstrates Nussbaumer FFT.
         - Assumed knowledge: Chinese remainder theorem for multi-variate polynomial rings.
@@ -34,10 +46,14 @@ A repository with examples for each tricks used in software polynomial multiplic
         - Assumed knowledge: Chinese remainder theorem for multi-variate polynomial rings.
         - References: [Sch77].
         - Additional references: [SS71].
-    - `TMVP.c`: This file demonstrates Toeplitz matrix-vector product built upon Toom-4.
-        - Assumed knowledge: Module-theoretic dual of algebra homomorphisms over commutative rings.
-        - References: [Too63], [Fid73], [Win80].
-        - Additional references:
+    - `Rader.c`: TBA.
+        - Assumed knowledge: Galois theory.
+        - References: [Rad68].
+        - Additional references: [Ber22].
+    - `Bruun.c`: TBA.
+        - Assumed knowledge: Chinese remainder theorem for polynomial rings (minimum). Galois theory (recommended).
+        - References: [BGM93].
+        - Additional references: [Bru78].
 
 ## Software requirements
 That's simple. You just need to compile `C` programs.
@@ -96,7 +112,12 @@ Henri J. Nussbaumer. Fast Polynomial Transform Algorithms for Digital Convolutio
 [CK91]
 David G. Cantor and Erich Kaltofen. On Fast Multiplication of Polynomials over Arbitrary Algebras. Acta Informatica, 28(7):693–701, 1991. https://link.springer.com/article/10.1007/BF01178683.
 
+[BGM93]
+Ian F. Blake, Shuhong Gao, and Ronald C. Mullin. Explicit Factor- ization of x2k + 1 over Fp with Prime p ≡ 3 mod 4. Applicable Alge- bra in Engineering, Communication and Computing, 4(2):89–94, 1993. https://link.springer.com/article/10.1007/BF01386832.
+
 [CF94]
 Richard Crandall and Barry Fagin. Discrete Weighted Trans- forms and Large-integer Arithmetic. Mathematics of computa- tion, 62(205):305–324, 1994. https://www.ams.org/journals/mcom/1994-62-205/S0025-5718-1994-1185244-1/?active=current.
 
+[Ber22]
+Daniel J. Bernstein. Fast norm computation in smooth-degree abelian number fields. 2022. https://eprint.iacr.org/2022/980.
 

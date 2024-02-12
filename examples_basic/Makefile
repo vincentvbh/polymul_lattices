@@ -20,7 +20,19 @@ C_SOURCEs =
 SOURCEs = $(ASM_SOURCEs) $(C_SOURCEs) $(COMMON_SOURCE)
 HEADERs = $(ASM_HEADERs) $(C_HEADERs)
 
-all: DWT FNT GT Nussbaumer Schoenhage TMVP Karatsuba BigIntMul
+all: BigIntMul Karatsuba TC Toeplitz-TC DWT FNT GT Nussbaumer Schoenhage
+
+BigIntMul: BigIntMul.c $(SOURCEs) $(HEADERs)
+	$(CC) $(CFLAGS) $(SOURCEs) $(GMP_FLAGS) $< -o $@
+
+Karatsuba: Karatsuba.c $(SOURCEs) $(HEADERs)
+	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
+
+TC: TC.c $(SOURCEs) $(HEADERs)
+	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
+
+Toeplitz-TC: Toeplitz-TC.c $(SOURCEs) $(HEADERs)
+	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
 
 DWT: DWT.c $(SOURCEs) $(HEADERs)
 	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
@@ -37,25 +49,18 @@ Nussbaumer: Nussbaumer.c $(SOURCEs) $(HEADERs)
 Schoenhage: Schoenhage.c $(SOURCEs) $(HEADERs)
 	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
 
-TMVP: TMVP.c $(SOURCEs) $(HEADERs)
-	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
-
-Karatsuba: Karatsuba.c $(SOURCEs) $(HEADERs)
-	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
-
-BigIntMul: BigIntMul.c $(SOURCEs) $(HEADERs)
-	$(CC) $(CFLAGS) $(SOURCEs) $(GMP_FLAGS) $< -o $@
-
 .PHONY: clean
 clean:
+	rm -f BigIntMul
+	rm -f Karatsuba
+	rm -f TC
+	rm -f Toeplitz-TC
 	rm -f DWT
 	rm -f FNT
 	rm -f GT
 	rm -f Nussbaumer
 	rm -f Schoenhage
-	rm -f TMVP
-	rm -f Karatsuba
-	rm -f BigIntMul
+
 
 
 

@@ -18,7 +18,7 @@ Add Toeplitz matrix-vector product derivation from an algebra homomorphism.
 */
 
 // ================
-// This file demonstrate polynomial multiplication in Z_Q[x] / (x^4m + 1)
+// This file demonstrates polynomial multiplication in Z_Q[x] / (x^4m + 1)
 // via Toeplitz matrix-vector product built upon Toom-4 with the point set
 // {0, 1, -1, 2, -2, 1/2, \infty}.
 
@@ -248,13 +248,17 @@ int32_t TC4_trunc_T_modified[7][7] = {
 static
 void matrix_vector_mul(int32_t *des, int32_t *srcM, int32_t *srcV, size_t len){
 
-    memset(des, 0, len * sizeof(int32_t));
+    int32_t buff[len];
+
+    memset(buff, 0, sizeof(buff));
 
     for(size_t i = 0; i < len; i++){
         for(size_t k = 0; k < len; k++){
-            des[i] += srcM[i * len + k] * srcV[k];
+            buff[i] += srcM[i * len + k] * srcV[k];
         }
     }
+
+    memmove(des, buff, len * sizeof(int32_t));
 
 }
 
@@ -270,110 +274,6 @@ void TMVP(int32_t *des, int32_t *srcM, int32_t *srcV, size_t len){
     }
 
 }
-
-
-// This function computes the product in Z_Q[x] / (x^4 + 1)
-// using Toom-4 with the point set {0, 1, -1, 2, -2, 1/2, \infty}.
-// Notice that matrices are modifed to ensure the well-defineness over Z_{32}.
-static
-void TC_negacyclic_mul4x4(int32_t *des, int32_t *src1, int32_t *src2){
-
-    int32_t src1_extended[7], src2_extended[7];
-    int32_t buff1[7], buff2[7];
-
-    // Copy.
-    for(size_t i = 0; i < 4; i++){
-        src1_extended[i] = src1[i];
-        src2_extended[i] = src2[i];
-    }
-
-    // Fill in zeros.
-    for(size_t i = 4; i < 7; i++){
-        src1_extended[i] = 0;
-        src2_extended[i] = 0;
-    }
-
-    // Apply Toom-4 evaluation matrix.
-    matrix_vector_mul(buff1, (int32_t*)&TC4_trunc[0][0], src1_extended, 7);
-    matrix_vector_mul(buff2, (int32_t*)&TC4_trunc[0][0], src2_extended, 7);
-
-    // Point-wise multiplication.
-    for(size_t i = 0; i < 7; i++){
-        buff2[i] = buff1[i] * buff2[i];
-    }
-
-    // Apply Toom-4 inversion matrix.
-    matrix_vector_mul(buff1, (int32_t*)&iTC4[0][0], buff2, 7);
-
-    // Divisions by powers of two.
-    buff1[0] = buff1[0];
-    buff1[1] = buff1[1] >> 2;
-    buff1[2] = buff1[2] >> 3;
-    buff1[3] = buff1[3] >> 1;
-    buff1[4] = buff1[4] >> 3;
-    buff1[5] = buff1[5] >> 2;
-    buff1[6] = buff1[6];
-
-    // Reduction modulo x^4 + 1.
-    des[0] = buff1[0] - buff1[4];
-    des[1] = buff1[1] - buff1[5];
-    des[2] = buff1[2] - buff1[6];
-    des[3] = buff1[3];
-
-}
-
-// This function illustrate how to compute Z_Q[x] / (x^4 + 1)
-// with Toeplitz transformation built upon Toom-4 with the point set
-// {0, 1, -1, 2, -2, 1/2, \infty}.
-static
-void TMVP_negacyclic_mul4x4(int32_t *des, int32_t *src1, int32_t *src2){
-
-    int32_t src2_extended[7];
-    int32_t buff[7];
-    int32_t src1_extended[7];
-
-    // Construct the compressed form of the Toeplitz matrix built from
-    // the multiplication map b -> a b mod x^4 + 1.
-    for(size_t i = 0; i < 4; i++){
-        src2_extended[i] = src2[3 - i];
-    }
-    for(size_t i = 4; i < 7; i++){
-        src2_extended[i] = -src2[7 - i];
-    }
-
-    // Extend by filling zeros.
-    for(size_t i = 0; i < 4; i++){
-        src1_extended[i] = src1[i];
-    }
-    for(size_t i = 4; i < 7; i++){
-        src1_extended[i] = 0;
-    }
-
-    // Apply Hom-V (Toom-4 evaluation matrix).
-    matrix_vector_mul(buff, (int32_t*)&TC4_trunc[0][0], src1_extended, 7);
-    memmove(src1_extended, buff, 7 * sizeof(int32_t));
-
-    // Apply Hom-M.
-    matrix_vector_mul(buff, (int32_t*)&iTC4_T_modified[0][0], src2_extended, 7);
-    for(size_t i = 0; i < 7; i++){
-        buff[i] *= iTC4_T_modified_scale[i];
-    }
-    memmove(src2_extended, buff, 7 * sizeof(int32_t));
-
-    // Point-wise multiplication.
-    for(size_t i = 0; i < 7; i++){
-        src2_extended[i] = src1_extended[i] * src2_extended[i];
-    }
-
-    // Apply Hom-I.
-    matrix_vector_mul(buff, (int32_t*)&TC4_trunc_T_modified[0][0], src2_extended, 7);
-    des[3] = buff[0] >> 3;
-    des[2] = buff[1] >> 2;
-    des[1] = buff[2] >> 1;
-    des[0] = buff[3] >> 1;
-
-}
-
 
 // This function illustrate how to compute Z_Q[x] / (x^len + 1)
 // with Toeplitz transformation built upon Toom-4 with the point set
@@ -470,43 +370,6 @@ int main(void){
         coeff_ring.memberZ(poly2 + i, &t);
     }
 
-
-    // Compute the product in Z_{2^32}[x] / (x^4 + 1).
-    twiddle = -1;
-    naive_mulR(ref, poly1, poly2, 4, &twiddle, coeff_ring);
-    // Reduce from Z_{2^32} to Z_Q.
-    for(size_t i = 0; i < 4; i++){
-        cmod_int32(ref + i, ref + i, &mod);
-    }
-
-    // Compute the product in Z_{2^32}[x] / (x^4 + 1) via Toom-4 with the point set
-    // {0, 1, -1, 2, -2, 1/2, \infty}.
-    TC_negacyclic_mul4x4(res, poly1, poly2);
-    // Reduce from Z_{2^32} to Z_Q.
-    for(size_t i = 0; i < 4; i++){
-        cmod_int32(res + i, res + i, &mod);
-    }
-
-    for(size_t i = 0; i < 4; i++){
-        assert(ref[i] == res[i]);
-    }
-
-    printf("TC_negacyclic_mul4x4 finished!\n");
-
-    // Compute the product in Z_{2^32}[x] / (x^4 + 1) with TMVP built upon the
-    // Toom-4 with the point set {0, 1, -1, 2, -2, 1/2, \infty}.
-    TMVP_negacyclic_mul4x4(res, poly1, poly2);
-    // Reduce from Z_{2^32} to Z_Q.
-    for(size_t i = 0; i < 4; i++){
-        cmod_int32(res + i, res + i, &mod);
-    }
-
-    for(size_t i = 0; i < 4; i++){
-        assert(ref[i] == res[i]);
-    }
-
-    printf("TMVP_negacyclic_mul4x4 finished!\n");
-
     // Compute the product in Z_{2^32}[x] / (x^16 + 1).
     twiddle = -1;
     naive_mulR(ref, poly1, poly2, 16, &twiddle, coeff_ring);
@@ -527,9 +390,7 @@ int main(void){
         assert(ref[i] == res[i]);
     }
 
-    printf("TMVP_TC4_negacyclic_mul finished!\n");
-
-    printf("test finished!\n");
+    printf("Test finished!\n");
 
 
 
