@@ -12,7 +12,7 @@
 
 // ================
 // This file demonstrate the correctness of Schoenhage + Cooley--Tukey
-// for Z_Q[x] / (x^256 - 1) for Q = 1, 2, 4, ..., 2^27.
+// for Z_Q[x] / (x^ARRAY_N - 1) with Q = 1, 2, 4, ..., 2^27.
 
 // ================
 // Optimization guide.
@@ -23,13 +23,14 @@
    Change them into negacyclic shifts.
 
 2. After applying Schoenhage and Cooley--Tukey, the remaining computing tasks are
-   32 polynomial multiplications in Z_{32 Q}[x] / (x^16 + 1).
+   32 polynomial multiplications in Z_{32 Q}[x] / (x^INNER_N + 1).
    Design fast computations for them.
 
 */
 
 #define ARRAY_N 256
 #define INNER_N 16
+#define TWIDDLE_POS 1
 
 // Q = 1, 2, 4, ..., 2^27
 #define Q (1 << 27)
@@ -82,7 +83,7 @@ struct commutative_ring coeff_ring = {
 };
 
 // ================
-// Z_{2^32}[x] / (x^16 + 1)
+// Z_{2^32}[x] / (x^INNER_N + 1)
 
 void memberZ_negacyclic(void *des, void *src){
     for(size_t i = 0; i < INNER_N; i++){
@@ -138,7 +139,7 @@ struct commutative_ring negacyclic_ring = {
 };
 
 // ================
-// buffers for twiddle factors in (Z_{2^32}[x] / (x^16 + 1))[y] / (y^32 - 1)
+// buffers for twiddle factors in (Z_{2^32}[x] / (x^INNER_N + 1))[y] / (y^32 - 1)
 
 int32_t streamlined_twiddle_symbolic_CT_table[32][INNER_N];
 int32_t streamlined_twiddle_symbolic_CT_itable[32][INNER_N];
@@ -167,7 +168,7 @@ int main(void){
 
 // ================
 
-    // Compute poly1 * poly2 in Z_{2^32}[x] / (x^256 - 1).
+    // Compute poly1 * poly2 in Z_{2^32}[x] / (x^ARRAY_N - 1).
     twiddle = 1;
     naive_mulR(ref,
         poly1, poly2, ARRAY_N, &twiddle, coeff_ring);
@@ -176,32 +177,28 @@ int main(void){
         cmod_int32(ref + i, ref + i, &mod);
     }
 
-// Schoenhage for Z_Q[x]/ (x^256 - 1)
+// Schoenhage for Z_Q[x]/ (x^ARRAY_N - 1)
 // ================
 // Notice that starting from this step, we compute the 2^5-multiple of the
 // product. Therefore, Q must not larger than 2^32 / 2^5 = 2^27.
 // This is why Q = 1, 2, 4, ..., 2^27 are the only options.
 
     // Initialization
-    for(size_t i = 0; i < 32; i++){
-        for(size_t j = 0; j < 16; j++){
-            poly1_NTT[i * 16 + j] = 0;
-            poly2_NTT[i * 16 + j] = 0;
-            res_NTT[i * 16 + j] = 0;
-        }
-    }
+    memset(poly1_NTT, 0, sizeof(poly1_NTT));
+    memset(poly2_NTT, 0, sizeof(poly2_NTT));
+    memset(res_NTT, 0, sizeof(res_NTT));
 
-    // Z_Q[x] / (x^256 - 1)
+    // Z_Q[x] / (x^ARRAY_N - 1)
     // to
-    // Z_Q[x, y] / (x^8 - y, y^32 - 1)
+    // Z_Q[x, y] / (x^(INNER_N / 2) - y, y^32 - 1)
     // to
-    // ( Z_Q[x] / (x^8 - y) ) [y] / (y^32 - 1)
+    // ( Z_Q[x] / (x^(INNER_N / 2) - y) ) [y] / (y^32 - 1)
     // to
-    // ( Z_Q[x] / (x^16 + 1) ) [y] / (y^32 - 1)
+    // ( Z_Q[x] / (x^INNER_N + 1) ) [y] / (y^32 - 1)
     for(size_t i = 0; i < 32; i++){
-        for(size_t j = 0; j < 8; j++){
-            poly1_NTT[i * 16 + j] = poly1[i * 8 + j];
-            poly2_NTT[i * 16 + j] = poly2[i * 8 + j];
+        for(size_t j = 0; j < (INNER_N / 2); j++){
+            poly1_NTT[i * INNER_N + j] = poly1[i * (INNER_N / 2) + j];
+            poly2_NTT[i * INNER_N + j] = poly2[i * (INNER_N / 2) + j];
         }
     }
 
@@ -215,7 +212,7 @@ int main(void){
 
     // Initialize constants for generating twiddle factors.
     memset(twiddle_negacyclic, 0, negacyclic_ring.sizeZ);
-    twiddle_negacyclic[1] = 1;
+    twiddle_negacyclic[TWIDDLE_POS] = 1;
     memset(scale_negacyclic, 0, negacyclic_ring.sizeZ);
     scale_negacyclic[0] = 1;
     memset(zeta_negacyclic, 0, negacyclic_ring.sizeZ);
@@ -226,21 +223,21 @@ int main(void){
         scale_negacyclic, twiddle_negacyclic, zeta_negacyclic, profile, 0, negacyclic_ring);
 
     // Apply symbolic FFTs.
-    // Now we have prod_i ( Z_{2^32}[x] / (x^16 + 1) ) [y] / (y - x^i)
+    // Now we have prod_i ( Z_{2^32}[x] / (x^INNER_N + 1) ) [y] / (y - x^i).
     compressed_CT_NTT(poly1_NTT,
         0, 4, streamlined_twiddle_symbolic_CT_table, profile, negacyclic_ring);
     compressed_CT_NTT(poly2_NTT,
         0, 4, streamlined_twiddle_symbolic_CT_table, profile, negacyclic_ring);
 
-    // Compute the products in prod_i ( Z_{2^32}[x] / (x^16 + 1) ) [y] / (y - x^i)
+    // Compute the products in prod_i ( Z_{2^32}[x] / (x^INNER_N + 1) ) [y] / (y - x^i)
     twiddle = -1;
     for(size_t i = 0; i < 32; i++){
-        naive_mulR(res_NTT + i * INNER_N, poly1_NTT + i * INNER_N, poly2_NTT + i * INNER_N, 16, &twiddle, coeff_ring);
+        naive_mulR(res_NTT + i * INNER_N, poly1_NTT + i * INNER_N, poly2_NTT + i * INNER_N, INNER_N, &twiddle, coeff_ring);
     }
 
     // Initialize constants for generating twiddle factors.
     memset(twiddle_negacyclic, 0, negacyclic_ring.sizeZ);
-    twiddle_negacyclic[15] = -1;
+    twiddle_negacyclic[INNER_N - TWIDDLE_POS] = -1;
     memset(scale_negacyclic, 0, negacyclic_ring.sizeZ);
     scale_negacyclic[0] = 1;
 
@@ -260,33 +257,33 @@ int main(void){
 
 // ================
 
-    // ( Z_Q[x] / (x^16 + 1) ) [y] / (y^32 - 1)
+    // ( Z_Q[x] / (x^INNER_N + 1) ) [y] / (y^32 - 1)
     // to
-    // ( Z_Q[x] / (x^8 - y) ) [y] / (y^32 - 1)
+    // ( Z_Q[x] / (x^(INNER_N / 2) - y) ) [y] / (y^32 - 1)
     for(size_t i = 1; i < 32; i++){
-        for(size_t j = 0; j < 8; j++){
-            coeff_ring.addZ(res_NTT + i * 16 + j, res_NTT + i * 16 + j, res_NTT + (i - 1) * 16 + j + 8);
+        for(size_t j = 0; j < (INNER_N / 2); j++){
+            coeff_ring.addZ(res_NTT + i * INNER_N + j, res_NTT + i * INNER_N + j, res_NTT + (i - 1) * INNER_N + j + (INNER_N / 2));
         }
     }
 
-    for(size_t j = 0; j < 8; j++){
-        coeff_ring.addZ(res_NTT + 0 * 16 + j, res_NTT + 0 * 16 + j, res_NTT + 31 * 16 + j + 8);
+    for(size_t j = 0; j < (INNER_N / 2); j++){
+        coeff_ring.addZ(res_NTT + 0 * INNER_N + j, res_NTT + 0 * INNER_N + j, res_NTT + 31 * INNER_N + j + (INNER_N / 2));
     }
 
-    // ( Z_Q[x] / (x^8 - y) ) [y] / (y^32 - 1)
+    // ( Z_Q[x] / (x^(INNER_N / 2) - y) ) [y] / (y^32 - 1)
     // to
-    // Z_{2^32}[x] / (x^256 - 1)
+    // Z_{2^32}[x] / (x^ARRAY_N - 1)
     for(size_t i = 0; i < 32; i++){
-        for(size_t j = 0; j < 8; j++){
-            res[i * 8 + j] = res_NTT[i * 16 + j];
+        for(size_t j = 0; j < (INNER_N / 2); j++){
+            res[i * (INNER_N / 2) + j] = res_NTT[i * INNER_N + j];
         }
     }
 
 // ================
 
-    // Z_{2^32}[x] / (x^256 - 1)
+    // Z_{2^32}[x] / (x^ARRAY_N - 1)
     // to
-    // Z_Q[x] / (x^256 - 1)
+    // Z_Q[x] / (x^ARRAY_N - 1)
     for(size_t i = 0; i < ARRAY_N; i++){
         cmod_int32(res + i, res + i, &mod);
     }
