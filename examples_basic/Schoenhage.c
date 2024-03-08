@@ -275,7 +275,7 @@ int main(void){
 
     // ( Z_Q[x] / (x^8 - y) ) [y] / (y^32 - 1)
     // to
-    // Z_{2^32}[x] / (x^256 + 1)
+    // Z_{2^32}[x] / (x^256 - 1)
     for(size_t i = 0; i < 32; i++){
         for(size_t j = 0; j < 8; j++){
             res[i * 8 + j] = res_NTT[i * 16 + j];
@@ -284,9 +284,9 @@ int main(void){
 
 // ================
 
-    // Z_{2^32}[x] / (x^256 + 1)
+    // Z_{2^32}[x] / (x^256 - 1)
     // to
-    // Z_Q[x] / (x^256 + 1)
+    // Z_Q[x] / (x^256 - 1)
     for(size_t i = 0; i < ARRAY_N; i++){
         cmod_int32(res + i, res + i, &mod);
     }
