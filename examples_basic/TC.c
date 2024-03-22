@@ -282,7 +282,7 @@ int main(void){
     // Compute the product in Z_{2^32}[x].
     naive_mul_long(ref, poly1, poly2, ARRAY_N, coeff_ring);
     // Reduce from Z_{2^32} to Z_Q.
-    for(size_t i = 0; i < ARRAY_N; i++){
+    for(size_t i = 0; i < 2 * ARRAY_N - 1; i++){
         cmod_int32(ref + i, ref + i, &mod);
     }
 
@@ -290,11 +290,11 @@ int main(void){
     // {0, 1, -1, 2, -2, 1/2, \infty}.
     TC_mul(res, poly1, poly2, ARRAY_N);
     // Reduce from Z_{2^32} to Z_Q.
-    for(size_t i = 0; i < ARRAY_N - 1; i++){
+    for(size_t i = 0; i < 2 * ARRAY_N - 1; i++){
         cmod_int32(res + i, res + i, &mod);
     }
 
-    for(size_t i = 0; i < ARRAY_N - 1; i++){
+    for(size_t i = 0; i < 2 * ARRAY_N - 1; i++){
         assert(ref[i] == res[i]);
     }
 
