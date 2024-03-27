@@ -304,7 +304,8 @@ int main(void){
         cmod_int32(ref + i, ref + i, &mod);
     }
 
-    // Compute the product in Z_{2^32}[x] via Toom-4 with the point set
+    // Compute the product in Z_{2^32}[x] / (x^ARRAY_N + 1) via
+    // striding followed by Toom-4 with the point set
     // {0, 1, -1, 2, -2, 1/2, \infty}.
     TC_striding_mul(res, poly1, poly2, ARRAY_N);
     // Reduce from Z_{2^32} to Z_Q.

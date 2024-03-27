@@ -20,12 +20,15 @@ C_SOURCEs =
 SOURCEs = $(ASM_SOURCEs) $(C_SOURCEs) $(COMMON_SOURCE)
 HEADERs = $(ASM_HEADERs) $(C_HEADERs)
 
-all: BigIntMul Karatsuba TC TC-striding Toeplitz-TC DWT FNT GT Nussbaumer Schoenhage
+all: BigIntMul Karatsuba Karatsuba-striding TC TC-striding Toeplitz-TC DWT FNT GT Nussbaumer Schoenhage
 
 BigIntMul: BigIntMul.c $(SOURCEs) $(HEADERs)
 	$(CC) $(CFLAGS) $(SOURCEs) $(GMP_FLAGS) $< -o $@
 
 Karatsuba: Karatsuba.c $(SOURCEs) $(HEADERs)
+	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
+
+Karatsuba-striding: Karatsuba-striding.c $(SOURCEs) $(HEADERs)
 	$(CC) $(CFLAGS) $(SOURCEs) $< -o $@
 
 TC: TC.c $(SOURCEs) $(HEADERs)
